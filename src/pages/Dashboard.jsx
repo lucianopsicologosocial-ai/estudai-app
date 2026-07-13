@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
-import { BookOpen, FileText, LogOut, User } from 'lucide-react';
+import { BookOpen, FileText, LogOut, User, CreditCard } from 'lucide-react';
 import LeitorPro from './LeitorPro';
 import FormatadorABNT from './FormatadorABNT';
+import Assinatura from './Assinatura';
 
 export default function Dashboard({ session }) {
-  const [aba, setAba] = useState('leitor'); // leitor | abnt
+  const [aba, setAba] = useState('leitor'); // leitor | abnt | assinatura
   const nome = session?.user?.user_metadata?.full_name || session?.user?.email;
 
   const sair = async () => {
@@ -111,6 +112,9 @@ export default function Dashboard({ session }) {
           <button className={aba === 'abnt' ? 'active' : ''} onClick={() => setAba('abnt')}>
             <FileText size={14} /> Formatador ABNT
           </button>
+          <button className={aba === 'assinatura' ? 'active' : ''} onClick={() => setAba('assinatura')}>
+            <CreditCard size={14} /> Assinatura
+          </button>
         </div>
 
         <div className="dash-user">
@@ -124,6 +128,11 @@ export default function Dashboard({ session }) {
         {aba === 'abnt' && (
           <div className="panel-wrap">
             <FormatadorABNT userId={session.user.id} />
+          </div>
+        )}
+        {aba === 'assinatura' && (
+          <div className="panel-wrap">
+            <Assinatura session={session} />
           </div>
         )}
       </div>
