@@ -22,7 +22,7 @@ export default async function handler(req, res) {
   }
 
   const PLANOS = {
-    estudai_mensal: { value: 29.9, cycle: 'MONTHLY', description: 'Estudaí — Plano Mensal' },
+    estudai_mensal: { value: 19.9, cycle: 'MONTHLY', description: 'Estudaí — Plano Mensal' },
   };
   const planoEscolhido = PLANOS[plano] || PLANOS.estudai_mensal;
 
@@ -63,7 +63,7 @@ export default async function handler(req, res) {
       headers,
       body: JSON.stringify({
         customer: customerId,
-        billingType: 'UNDEFINED',
+        billingType: 'UNDEFINED', // deixa o cliente escolher Pix, cartão ou boleto
         value: planoEscolhido.value,
         nextDueDate: primeiraCobranca,
         cycle: planoEscolhido.cycle,
@@ -76,10 +76,21 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: assinaturaData?.errors?.[0]?.description || 'Não foi possível criar a assinatura.' });
     }
 
+    // Buscar a primeira cobrança gerada para obter o link de pagamento
+    // (o Asaas não retorna invoiceUrl direto no objeto da assinatura, só nas cobranças dela)
+    let invoiceUrl = null;
+    try {
+      const cobrancasResp = await fetch(`${ASAAS_BASE_URL}/subscriptions/${assinaturaData.id}/payments`, { headers });
+      const cobrancasData = await cobrancasResp.json();
+      invoiceUrl = cobrancasData?.data?.[0]?.invoiceUrl || null;
+    } catch {
+      // se essa segunda chamada falhar, o usuário ainda recebe o ID da assinatura
+    }
+
     return res.status(200).json({
       subscriptionId: assinaturaData.id,
       customerId,
-      invoiceUrl: assinaturaData?.invoiceUrl || null,
+      invoiceUrl,
     });
   } catch (err) {
     console.error('Erro Asaas:', err);
