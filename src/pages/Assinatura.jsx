@@ -68,7 +68,7 @@ export default function Assinatura({ session }) {
       <p className="sub">Acesso completo ao Leitor Pro e Formatador ABNT.</p>
 
       <div className="assinatura-preco">
-        <div className="valor">R$ 29,90</div>
+        <div className="valor">R$ 19,90</div>
         <div className="periodo">por mês · cancele quando quiser</div>
       </div>
 
