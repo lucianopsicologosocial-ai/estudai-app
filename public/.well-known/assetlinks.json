@@ -1,8 +1,8 @@
 [{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "br.com.useestudai.twa",
-    "sha256_cert_fingerprints": ["F5:9C:76:73:F9:93:43:DF:41:7F:C4:64:C4:A7:16:DC:2F:C4:C0:A2:91:21:19:11:FC:89:58:09:90:A7:1C:1C"]
-  }
+        "relation": ["delegate_permission/common.handle_all_urls"],
+        "target": {
+                  "namespace": "android_app",
+                  "package_name": "br.com.useestudai.twa",
+                  "sha256_cert_fingerprints": ["50:5E:F0:4F:03:A5:6E:BC:17:E7:F6:F5:3D:AB:10:74:0E:41:FD:0C:5F:3C:0B:4A:83:19:64:CD:99:7C:3B:A2"]
+        }
 }]
