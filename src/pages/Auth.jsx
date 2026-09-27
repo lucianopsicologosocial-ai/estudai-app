@@ -3,7 +3,7 @@ import { supabase } from '../supabaseClient';
 import { BookOpen, Mail, Lock, User, Loader2 } from 'lucide-react';
 
 export default function Auth() {
-  const [modo, setModo] = useState('login'); // login | cadastro
+  const [modo, setModo] = useState('login'); // login | cadastro | recuperar
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -17,7 +17,13 @@ export default function Auth() {
     setMensagem('');
     setCarregando(true);
     try {
-      if (modo === 'cadastro') {
+      if (modo === 'recuperar') {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin,
+        });
+        if (error) throw error;
+        setMensagem('Se este e-mail estiver cadastrado, você vai receber um link para criar uma nova senha. Confira também a caixa de spam.');
+      } else if (modo === 'cadastro') {
         const { error } = await supabase.auth.signUp({
           email,
           password: senha,
@@ -41,6 +47,7 @@ export default function Auth() {
     if (msg.includes('User already registered')) return 'Este e-mail já está cadastrado. Tente entrar.';
     if (msg.includes('Password should be at least')) return 'A senha precisa ter pelo menos 6 caracteres.';
     if (msg.includes('Unable to validate email')) return 'E-mail inválido.';
+    if (msg.toLowerCase().includes('rate limit') || msg.includes('For security purposes')) return 'Muitas tentativas. Aguarde alguns minutos e tente de novo.';
     return msg;
   };
 
@@ -158,6 +165,18 @@ export default function Auth() {
           border-radius: 7px;
           margin-bottom: 14px;
         }
+        .auth-link {
+          background: none;
+          border: none;
+          color: #3D5A4C;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          padding: 0;
+          margin: 14px auto 0;
+          display: block;
+          text-decoration: underline;
+        }
         .spin { animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
@@ -169,7 +188,11 @@ export default function Auth() {
         </div>
         <p className="auth-subtitle">Leitura dinâmica, formatação ABNT e progresso nos estudos, tudo em um só lugar.</p>
 
-        <div className="auth-tabs">
+        {modo === 'recuperar' && (
+          <p className="auth-subtitle" style={{ marginTop: -12 }}>Digite o e-mail da sua conta para receber o link de redefinição de senha.</p>
+        )}
+
+        <div className="auth-tabs" style={modo === 'recuperar' ? { display: 'none' } : undefined}>
           <button className={modo === 'login' ? 'active' : ''} onClick={() => { setModo('login'); setErro(''); setMensagem(''); }}>Entrar</button>
           <button className={modo === 'cadastro' ? 'active' : ''} onClick={() => { setModo('cadastro'); setErro(''); setMensagem(''); }}>Criar conta</button>
         </div>
@@ -188,15 +211,28 @@ export default function Auth() {
             <Mail size={16} />
             <input type="email" placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
-          <div className="auth-field">
-            <Lock size={16} />
-            <input type="password" placeholder="Senha" value={senha} onChange={(e) => setSenha(e.target.value)} required minLength={6} />
-          </div>
+          {modo !== 'recuperar' && (
+            <div className="auth-field">
+              <Lock size={16} />
+              <input type="password" placeholder="Senha" value={senha} onChange={(e) => setSenha(e.target.value)} required minLength={6} />
+            </div>
+          )}
           <button type="submit" className="auth-submit" disabled={carregando}>
             {carregando && <Loader2 size={16} className="spin" />}
-            {modo === 'login' ? 'Entrar' : 'Criar conta'}
+            {modo === 'login' ? 'Entrar' : modo === 'cadastro' ? 'Criar conta' : 'Enviar link de recuperação'}
           </button>
         </form>
+
+        {modo === 'login' && (
+          <button type="button" className="auth-link" onClick={() => { setModo('recuperar'); setErro(''); setMensagem(''); }}>
+            Esqueci minha senha
+          </button>
+        )}
+        {modo === 'recuperar' && (
+          <button type="button" className="auth-link" onClick={() => { setModo('login'); setErro(''); setMensagem(''); }}>
+            Voltar para o login
+          </button>
+        )}
       </div>
     </div>
   );
