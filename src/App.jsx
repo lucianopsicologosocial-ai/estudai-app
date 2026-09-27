@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
+import RedefinirSenha from './pages/RedefinirSenha';
 
 export default function App() {
   const [session, setSession] = useState(null);
   const [carregando, setCarregando] = useState(true);
+  const [recuperando, setRecuperando] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -13,7 +15,8 @@ export default function App() {
       setCarregando(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') setRecuperando(true);
       setSession(session);
     });
 
@@ -27,6 +30,8 @@ export default function App() {
       </div>
     );
   }
+
+  if (recuperando) return <RedefinirSenha onConcluir={() => setRecuperando(false)} />;
 
   return session ? <Dashboard session={session} /> : <Auth />;
 }
